@@ -3,6 +3,10 @@ name = "paralympics"
 version = "2025.0.1"
 dependencies = [
     "flask",
+    "plotly",
+    "pandas",
+    "fastapi",
+    "uvicorn"
 ]
 
 [build-system]
