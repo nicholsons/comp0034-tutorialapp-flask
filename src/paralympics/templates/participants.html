@@ -3,5 +3,28 @@
 {% block title %}Participants{% endblock %}
 
 {% block content %}
-    <p>Participants bar chart.</p>
+    <div class="container-fluid mt-4">
+        <div class="row">
+            <div class="col-md-3">
+                <form method="post" action="{{ url_for('main.participants') }}">
+                    {{ form.hidden_tag() }}
+                    {{ form.paralympics_types.label(class="form-label") }}
+                    {% for subfield in form.paralympics_types %}
+                        <div class="form-check">
+                            {{ subfield(class="form-check-input") }}
+                            {{ subfield.label(class="form-check-label") }}
+                        </div>
+                    {% endfor %}
+                    {{ form.submit() }}
+                </form>
+            </div>
+            <div class="col-md-9">
+                {% if figs %}
+                    {% for f in figs %}
+                        {{ f.fig | safe }}
+                    {% endfor %}
+                {% endif %}
+            </div>
+        </div>
+    </div>
 {% endblock %}
