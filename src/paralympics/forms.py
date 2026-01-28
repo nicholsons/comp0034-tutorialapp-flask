@@ -1,8 +1,17 @@
 from flask_wtf import FlaskForm
-from wtforms import SelectField, SubmitField
+from wtforms import RadioField, SelectField, SelectMultipleField, SubmitField
 from wtforms.validators import DataRequired, Length
-from wtforms import SelectMultipleField
-from wtforms.widgets import ListWidget, CheckboxInput
+from wtforms.widgets import CheckboxInput, ListWidget
+
+
+class QuizForm(FlaskForm):
+    """ A form with 1 question as a radio field """
+    question = RadioField("",
+                          choices=[],
+                          coerce=int,
+                          validators=[DataRequired()],
+                          )
+    submit = SubmitField("Submit response", render_kw={"class": "btn btn-primary"})
 
 
 class TrendSelectForm(FlaskForm):

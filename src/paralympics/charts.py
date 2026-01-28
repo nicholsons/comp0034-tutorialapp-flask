@@ -74,9 +74,11 @@ def scatter_map():
                          lat=chart_df.latitude,
                          lon=chart_df.longitude,
                          hover_name=chart_df.name,
-                         zoom=0.5,
-                         title="Paralympics locations"
+                         zoom=1,
+                         title="Paralympics locations",
+                         height=800,
                          )
+
     return fig
 
 

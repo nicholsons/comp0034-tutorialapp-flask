@@ -1,14 +1,85 @@
-from flask import Blueprint, render_template
+import requests
+from flask import Blueprint, flash, redirect, render_template, url_for
 
 from paralympics.charts import bar_chart, line_chart, scatter_map
-from paralympics.forms import TrendSelectForm, ParalympicsTypeForm
+from paralympics.forms import ParalympicsTypeForm, QuizForm, TrendSelectForm
 
 bp = Blueprint('main', __name__)
 
 
-@bp.route('/')
-def index():
-    return render_template('index.html')
+def _get_number_questions():
+    """ Helper to get the number of questions available"""
+    q_resp = requests.get(f"http://127.0.0.1:8000/question", timeout=2)
+    q_resp.raise_for_status()
+    questions = q_resp.json()
+    return len(questions)
+
+
+def _get_question(qid):
+    """ Helper to get the question"""
+    q_resp = requests.get(f"http://127.0.0.1:8000/question/{qid}", timeout=2)
+    q_resp.raise_for_status()
+    q = q_resp.json()
+    return q
+
+
+def _get_responses(qid):
+    """ Helper to get the questions and responses for a given question id"""
+    r_resp = requests.get(f"http://127.0.0.1:8000/response/search?question_id={qid}", timeout=2)
+    r_resp.raise_for_status()
+    r = r_resp.json()
+    return r
+
+
+@bp.route("/", methods=["GET", "POST"])
+@bp.route("/<int:qid>", methods=["GET", "POST"])
+def index(qid=1):
+    """ Page that displays one question at a time
+
+    If user visits '/', qid defaults to 1. If user visits '/3', qid=3.
+
+    Quiz flow:
+    - Correct -> go to next question
+    - Incorrect -> stay on current question
+    - After last question answered correctly -> completion message, back to start
+    """
+
+    # Create an instance of the form
+    form = QuizForm()
+
+    # Logic to handle which question the user is on
+    number_questions = _get_number_questions()
+
+    if qid < 1 or qid > number_questions:
+        flash("Oops, that question does not exist!")
+        return redirect(url_for("main.index"))
+
+    # Get the question and responses for the current question
+    question = _get_question(qid)
+    responses = _get_responses(qid)
+
+    # Populate form (choices must be set before validate_on_submit)
+    form.question.label.text = question["question_text"]
+    form.question.choices = [(r["id"], r["response_text"]) for r in responses]
+
+    if form.validate_on_submit():
+        # Logic to check if the response is correct
+        selected_id = form.question.data
+        selected_resp = next((r for r in responses if r.get("id") == selected_id), None)
+        is_correct = bool(selected_resp and selected_resp.get("is_correct"))
+        if is_correct:
+            # If last question, complete; else advance to the next question
+            if qid == number_questions:
+                flash("Well done! You completed the questions!", "success")
+                return redirect(url_for("main.index", qid=1))
+            else:
+                return redirect(url_for("main.index", qid=qid + 1))
+        else:
+            # Stay on the same question
+            flash("Try again!", "warning")
+            return redirect(url_for("main.index", qid=qid))
+
+    return render_template("index.html", form=form, qid=qid)
 
 
 @bp.route('/locations')
@@ -55,3 +126,18 @@ def trends():
     fig = line_chart(selected_type)
     fig_for_jinja = {"fig": fig.to_html(full_html=False, include_plotlyjs=True)}
     return render_template('trends.html', fig_html=fig_for_jinja, form=form)
+
+
+@bp.get('/news')
+def news():
+    """ Generates the page that displays hacker news via algolia which allows for keyword search """
+    endpoint = 'https://hn.algolia.com/api/v1/search?query=paralympics&tags=story'
+    resp = requests.get(endpoint)
+    resp.raise_for_status()
+    data = resp.json()
+    stories = []
+    for hit in data.get('hits', [])[:20]:
+        title = hit.get('title') or '(no title)'
+        url = hit.get('url') or hit.get('story_url') or '(no url)'
+        stories.append({'title': title, 'url': url})
+    return render_template('news.html', stories=stories)
