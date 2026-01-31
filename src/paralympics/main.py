@@ -2,14 +2,16 @@ import requests
 from flask import Blueprint, flash, redirect, render_template, url_for
 
 from paralympics.charts import bar_chart, line_chart, scatter_map
-from paralympics.forms import ParalympicsTypeForm, QuizForm, TrendSelectForm
+from paralympics.forms import NewQuestionForm, ParalympicsTypeForm, QuizForm, TrendSelectForm
+
+API_BASE_URL = "http://127.0.0.1:8000"
 
 bp = Blueprint('main', __name__)
 
 
 def _get_number_questions():
     """ Helper to get the number of questions available"""
-    q_resp = requests.get(f"http://127.0.0.1:8000/question", timeout=2)
+    q_resp = requests.get(f"{API_BASE_URL}/question", timeout=2)
     q_resp.raise_for_status()
     questions = q_resp.json()
     return len(questions)
@@ -17,7 +19,7 @@ def _get_number_questions():
 
 def _get_question(qid):
     """ Helper to get the question"""
-    q_resp = requests.get(f"http://127.0.0.1:8000/question/{qid}", timeout=2)
+    q_resp = requests.get(f"{API_BASE_URL}/question/{qid}", timeout=2)
     q_resp.raise_for_status()
     q = q_resp.json()
     return q
@@ -25,7 +27,7 @@ def _get_question(qid):
 
 def _get_responses(qid):
     """ Helper to get the questions and responses for a given question id"""
-    r_resp = requests.get(f"http://127.0.0.1:8000/response/search?question_id={qid}", timeout=2)
+    r_resp = requests.get(f"{API_BASE_URL}/response/search?question_id={qid}", timeout=2)
     r_resp.raise_for_status()
     r = r_resp.json()
     return r
@@ -80,6 +82,39 @@ def index(qid=1):
             return redirect(url_for("main.index", qid=qid))
 
     return render_template("index.html", form=form, qid=qid)
+
+
+@bp.route('/question', methods=['GET', 'POST'])
+def add_question():
+    """ Adds a new question with 4 potential responses to the database """
+    form = NewQuestionForm()
+    if form.validate_on_submit():
+        # Get the question text from the form
+        question_text = form.question_text.data
+        # Create JSON (match the database table fields)
+        question = {"question_text": question_text}
+        try:
+            # Use POST request with the JSON
+            resp = requests.post(f"{API_BASE_URL}/question", json=question)
+            resp.raise_for_status()
+            # The request if successful will include the new row id in the response
+            qid = resp.json().get("id")
+            # Get the values for the 4 possible responses from the form
+            for i in range(1, 5):
+                text_field = getattr(form, f"option_text_{i}")
+                correct_field = getattr(form, f"is_correct_{i}")
+                # Create the JSON for a response (match the fields im the database response table)
+                response = {"response_text": text_field.data,
+                            "is_correct": bool(correct_field.data),
+                            "question_id": qid}
+                # Use HTTP post request to save to the database im the response table
+                resp = requests.post(f"{API_BASE_URL}/response", json=response)
+                resp.raise_for_status()
+            flash(f"Question saved!", "success")
+        except requests.RequestException as e:
+            flash(f"Failed to add question: {e}", "danger")
+
+    return render_template("new_question.html", form=form)
 
 
 @bp.route('/locations')

@@ -1,0 +1,61 @@
+{% extends 'base.html' %}
+
+{% block title %}Questions{% endblock %}
+
+{% block content %}
+    <div class="container mt-6">
+
+        <form action="{{ url_for('main.add_question') }}" method="post" novalidate>
+            {{ form.hidden_tag() }}
+
+            <legend class="mt-4">Add a new question</legend>
+
+            {# Question text row #}
+            <div class="mb-3">
+                {{ form.question_text.label(class="form-label") }}
+                {{ form.question_text(class="form-control" + (" is-invalid" if form.question_text.errors else "")) }}
+                {% if form.question_text.errors %}
+                    <div class="invalid-feedback">
+                        {{ form.question_text.errors|join(', ') }}
+                    </div>
+                {% endif %}
+            </div>
+
+            {# Option rows #}
+            {% for i in range(1, 5) %}
+                {# Get the field objects by name using dict-style access #}
+                {% set opt_name = 'option_text_' ~ i %}
+                {% set chk_name = 'is_correct_' ~ i %}
+                {% set opt = form[opt_name] %}
+                {% set chk = form[chk_name] %}
+
+                <div class="row g-3 align-items-center mb-2">
+                    <div class="col-12 col-md-8">
+                        {{ opt.label(class="form-label") }}
+                        {{ opt(class="form-control" + (" is-invalid" if opt.errors else "")) }}
+                        {% if opt.errors %}
+                            <div class="invalid-feedback">
+                                {{ opt.errors|join(', ') }}
+                            </div>
+                        {% endif %}
+                    </div>
+
+                    <div class="col-12 col-md-4">
+                        <div class="form-check mt-4">
+                            {{ chk(class="form-check-input" + (" is-invalid" if chk.errors else "")) }}
+                            {{ chk.label(class="form-check-label") }}
+                            {% if chk.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {{ chk.errors|join(', ') }}
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+            <br>
+            {{ form.submit() }}
+        </form>
+
+    </div>
+{% endblock %}

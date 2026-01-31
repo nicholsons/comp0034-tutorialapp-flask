@@ -1,21 +1,53 @@
-{# Copied from https://blog.miguelgrinberg.com/post/dynamic-forms-with-flask #}
+{# Adapted from https://blog.miguelgrinberg.com/post/dynamic-forms-with-flask #}
 
-{# Render text field #}
-{% macro text(field, label, autofocus) %}
-  {% if label %}
-    {{ field.label(class='form-label') }}
-  {% endif %}
-  {% if autofocus %}
-    {{ field(class='form-control' + (' is-invalid' if field.errors else ''), autofocus="true") }}
-  {% else %}
-    {{ field(class='form-control' + (' is-invalid' if field.errors else '')) }}
-  {% endif %}
+{# Render errors #}
+{% macro errors(field, block=False) -%}
   {% if field.errors %}
-  <div class="invalid-feedback">{{ field.errors|join(', ') }}</div>
+    <div class="invalid-feedback{{ ' d-block' if block else '' }}">{{ field.errors|join(', ') }}</div>
   {% endif %}
 {% endmacro %}
 
+{# Render text field #}
+{% macro text(field, label, autofocus=False) %}
+  {% if label %}
+    {{ field.label(class='form-label') }}
+  {% endif %}
+
+  {% set css = 'form-control' ~ (' is-invalid' if field.errors else '') %}
+  {% set extra = {'autofocus': 'true'} if autofocus else {} %}
+  {{ field(class=css, **extra) }}
+
+  {{ errors(field) }}
+{% endmacro %}
+
 {# Render Bootstrap select field #}
-{% macro select(field) %}
-  {{ field(class="form-select") }}
+{% macro select(field, label=None) %}
+  {% if label %}
+    {{ field.label(class='form-label') }}
+  {% endif %}
+
+  {% set css = 'form-select' ~ (' is-invalid' if field.errors else '') %}
+  {{ field(class=css) }}
+
+  {{ errors(field) }}
+{% endmacro %}
+
+{# Render Bootstrap checkbox field (no switch) #}
+{% macro checkbox(field, label=None, inline=False, attrs=None) %}
+  {% set wrapper_cls = 'form-check' ~ (' form-check-inline' if inline else '') %}
+  <div class="{{ wrapper_cls }}">
+    {{ field(
+      class='form-check-input' ~ (' is-invalid' if field.errors else ''),
+      id=field.id,
+      **(attrs or {})
+    ) }}
+    {% if label is not sameas(false) %}
+      <label class="form-check-label" for="{{ field.id }}">
+        {{ label if label is not none else field.label.text }}
+      </label>
+    {% endif %}
+
+    {# For checkboxes, invalid feedback should be forced visible under the control #}
+    {{ errors(field, block=True) }}
+  </div>
 {% endmacro %}
