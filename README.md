@@ -11,7 +11,7 @@ the tutorial activity guidance. You may have a solution that differs from these.
 
 - [Week 2](https://github.com/nicholsons/comp0034-tutorialapp-flask/tree/week2) Create and configure the basic app; create a base and page templates, includes navigation
 - [Week 3](https://github.com/nicholsons/comp0034-tutorialapp-flask/tree/week3) Create charts and add them to the pages by updating the routes and templates
-- [Week 4]()
+- [Week 4](https://github.com/nicholsons/comp0034-tutorialapp-flask/tree/week4) Create form that interact with REST API for data
 - [Week 5]()
 - [Week 6]()
 - [Week 7]()
