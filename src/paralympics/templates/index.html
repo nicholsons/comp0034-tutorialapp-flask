@@ -3,5 +3,28 @@
 {% block title %}Questions{% endblock %}
 
 {% block content %}
-    <p>Placeholder for the home page which will have the questions.</p>
+    <div class="container mt-6">
+        <br>
+        <p class="text-center alert alert-primary">Use the charts to help you answer the
+            questions.</p>
+        <p class="mt-3 mb-3">Question {{ qid }} of {{ number_questions }}</p>
+        {# Form submit using post to the index route in the Flask app #}
+        <form action="{{ url_for('main.index') }}" method="post">
+            {# Required for CSRF unless this has been explicitly disabled #}
+            {{ form.csrf_token }}
+            <fieldset class="row mb-3">
+                <legend class="col-form-label col-sm-10 pt-0"
+                        id="questionNumber">{{ form.question.label }}</legend>
+                <div class="col-sm-10">
+                    {% for subfield in form.question %}
+                        <div class="form-check">
+                            {{ subfield(class="form-check-input", type="radio") }}
+                            {{ subfield.label(class="form-check-label") }}
+                        </div>
+                    {% endfor %}
+                </div>
+            </fieldset>
+            {{ form.submit() }}
+        </form>
+    </div>
 {% endblock %}

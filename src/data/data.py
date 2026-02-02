@@ -231,3 +231,15 @@ def get_event_data():
         raise RuntimeError(f"Error decoding JSON from XLSX conversion: {e}") from e
     except Exception as e:
         raise RuntimeError(f"Unexpected error loading event data: {e}") from e
+
+
+def add_quiz_data():
+    """ Method to add question data to the paralympics database."""
+    database_file = Path(__file__).parent.joinpath("paralympics.db")
+    with sqlite3.connect(database_file) as conn:
+        cur = conn.cursor()
+        for sql_file in ("question.sql", "response.sql"):
+            sql_path = Path(__file__).parent.joinpath(sql_file)
+            cur.executescript(sql_path.read_text())
+        conn.commit()
+

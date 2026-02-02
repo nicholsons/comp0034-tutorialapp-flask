@@ -1,0 +1,9 @@
+{% extends "base.html" %}
+{% block content %}
+    <div class="container mt-4">
+        <h4>Latest paralympics news</h4>
+        {% for story in stories %}
+            <p><a href="{{ story.url }}">{{ story.title }}</a></p>
+        {% endfor %}
+    </div>
+{% endblock %}

@@ -8,7 +8,7 @@ dependencies = [
     "fastapi",
     "uvicorn",
     "requests",
-    "flask-wtf"
+    "flask-wtf",
 ]
 
 [build-system]

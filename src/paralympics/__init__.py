@@ -2,7 +2,6 @@ from flask import Flask
 
 from paralympics.config import DevConfig
 
-
 def create_app(config_class=DevConfig):
     """Create and configure the Flask application.
 
