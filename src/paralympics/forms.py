@@ -49,7 +49,7 @@ class QuizForm(FlaskForm):
                           coerce=int,
                           validators=[DataRequired()],
                           )
-    submit = SubmitField("Submit response", render_kw={"class": "btn btn-primary"})
+    submit = SubmitField("Submit answer", render_kw={"class": "btn btn-primary"})
 
 
 class TrendSelectForm(FlaskForm):
