@@ -9,6 +9,8 @@ dependencies = [
     "uvicorn",
     "requests",
     "flask-wtf",
+    "pytest",
+    "pytest-playwright"
 ]
 
 [build-system]
