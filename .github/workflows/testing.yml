@@ -30,7 +30,7 @@ jobs:
         pip install -e .
         if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
     - name: Ensure browsers are installed
-      run: python -m playwright install --with-deps
+      run: python -m playwright install-deps chromium
     - name: Lint with flake8
       run: |
         # stop the build if there are Python syntax errors or undefined names
